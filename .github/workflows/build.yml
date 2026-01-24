@@ -4,7 +4,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     permissions:
       contents: write
     steps:
@@ -13,15 +13,15 @@ jobs:
 
     - name: Cleanup Space
       run: |
-        sudo apt-get purge azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* powershell mysql* php* android*
-        sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
+        sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/powershell /usr/share/swift
+        docker system prune -a -f
         sudo apt-get autoremove -y
         sudo apt-get clean
 
     - name: Install Build Tools
       run: |
         sudo apt-get update
-        sudo apt-get install -y gperf gcc-multilib gcc-10-multilib g++-multilib g++-10-multilib libc6-dev-i386 lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z1-dev libgl1-mesa-dev libxml2-utils xsltproc unzip bc bison build-essential curl flex g++-multilib gcc-multilib git gnupg gperf image-magick lib32ncurses5-dev lib32readline-dev lib32z1-dev liblz4-tool libncurses5 libncurses5-dev libsdl1.2-dev libssl-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev python3 python2
+        sudo apt-get install -y gperf gcc-multilib gcc-10-multilib g++-multilib g++-10-multilib libc6-dev-i386 lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z1-dev libgl1-mesa-dev libxml2-utils xsltproc unzip bc bison build-essential curl flex g++-multilib gcc-multilib git gnupg gperf image-magick lib32ncurses5-dev lib32readline-dev lib32z1-dev liblz4-tool libncurses5 libncurses5-dev libsdl1.2-dev libssl-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev python3 python-is-python3
 
     - name: Install Repo Tool
       run: |
@@ -30,7 +30,7 @@ jobs:
         chmod a+x ~/bin/repo
         sudo ln -sf ~/bin/repo /usr/bin/repo
 
-    - name: Initialize & Sync TWRP Source
+    - name: Initialize TWRP Source
       run: |
         mkdir twrp
         cd twrp
@@ -55,9 +55,8 @@ jobs:
     - name: Upload Recovery to Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: TWRP-A02-SM-A022F
+        name: TWRP-A02-Build
         path: twrp/out/target/product/a02/recovery.img
-        if-no-files-found: error
 
     - name: Create Release
       uses: softprops/action-gh-release@v2
@@ -66,6 +65,6 @@ jobs:
         files: twrp/out/target/product/a02/recovery.img
         name: TWRP Build SM-A022F
         tag_name: build-${{ github.run_number }}
-        body: "Build otomatis TWRP A02 menggunakan Ubuntu Latest dan GitHub Actions v4."
+        body: "Build otomatis TWRP A02 - Runner 22.04"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
