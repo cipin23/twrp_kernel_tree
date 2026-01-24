@@ -1,10 +1,10 @@
-name: Build TWRP A02 Action
+name: Build TWRP
 on:
   workflow_dispatch: # Biar bisa lo klik "Run Manual"
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
