@@ -4,7 +4,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     permissions:
       contents: write
     steps:
@@ -13,11 +13,9 @@ jobs:
 
     - name: Cleanup Space
       run: |
-        sudo rm -rf /usr/share/dotnet
-        sudo rm -rf /usr/local/lib/android
-        sudo rm -rf /opt/ghc
-        sudo rm -rf /usr/local/share/powershell
-        sudo rm -rf /usr/share/swift
+        # Hapus folder raksasa saja, JANGAN sentuh apt-get autoremove
+        sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/powershell /usr/share/swift
+        docker system prune -a -f
 
     - name: Install Build Tools
       run: |
@@ -56,7 +54,7 @@ jobs:
     - name: Upload Recovery to Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: TWRP-A02-SM-A022F
+        name: TWRP-A02-Build
         path: twrp/out/target/product/a02/recovery.img
 
     - name: Create Release
@@ -66,6 +64,6 @@ jobs:
         files: twrp/out/target/product/a02/recovery.img
         name: TWRP Build SM-A022F
         tag_name: build-${{ github.run_number }}
-        body: "Build otomatis TWRP Samsung A02 (SM-A022F)"
+        body: "Build otomatis TWRP Samsung A02 - Runner 22.04"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
