@@ -1,0 +1,63 @@
+name: Build TWRP with Gem
+
+on:
+  workflow_dispatch:
+    inputs:
+      MANIFEST_BRANCH:
+        description: 'Branch Manifest (contoh: twrp-11)'
+        required: true
+        default: 'twrp-11'
+      DEVICE_TREE:
+        description: 'Link GitHub Device Tree loe'
+        required: true
+        default: 'https://github.com/rdbckp/twrp_kernel_tree'
+      DEVICE_PATH:
+        description: 'Path Device Tree (folder target)'
+        required: true
+        default: 'device/samsung/a02'
+      DEVICE_NAME:
+        description: 'Nama Device (seperti di BoardConfig.mk)'
+        required: true
+        default: 'a02'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Beresin Storage Runner
+      uses: jlumbroso/free-disk-space@main
+      with:
+        tool-cache: true
+        android: false # Kita butuh Android SDK buat build
+
+    - name: Install Tools Wajib
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y bc build-essential tar zip curl libstdc++6 git wget python3 gcc clang libssl-dev repo rsync
+
+    - name: Setup Repo & Sync Source
+      run: |
+        mkdir ~/twrp && cd ~/twrp
+        git config --global user.email "gw@oprek.com"
+        git config --global user.name "Opreker"
+        repo init --depth=1 -u https://github.com/minimal-twrp/android_bootable_recovery.git -b ${{ github.event.inputs.MANIFEST_BRANCH }}
+        repo sync -j$(nproc --all) --force-sync
+
+    - name: Clone Device Tree
+      run: |
+        cd ~/twrp
+        git clone ${{ github.event.inputs.DEVICE_TREE }} -b main ${{ github.event.inputs.DEVICE_PATH }}
+
+    - name: Build Recovery (Menu Diet)
+      run: |
+        cd ~/twrp
+        export ALLOW_MISSING_DEPENDENCIES=true
+        source build/envsetup.sh
+        lunch twrp_${{ github.event.inputs.DEVICE_NAME }}-eng
+        make recoveryimage -j$(nproc --all)
+
+    - name: Upload Hasil Build
+      uses: actions/upload-artifact@v4
+      with:
+        name: TWRP-A022F-Custom
+        path: ~/twrp/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/recovery.img
