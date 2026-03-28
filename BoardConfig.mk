@@ -31,7 +31,8 @@ BOARD_KERNEL_BASE := 0x40000000
 BOARD_KERNEL_PAGESIZE := 2048
 TARGET_PREBUILT_KERNEL := $(DEVICE_PATH)/prebuilt/Image
 BOARD_KERNEL_CMDLINE := androidboot.hardware=mt6739
-BOARD_MKBOOTIMG_ARGS := --kernel_offset 0x00008000 --ramdisk_offset 0x05000000 --tags_offset 0x04000000 --header_version 2 --board SRPTK19C000SA
+# Gabungin semua: Kernel Offset, Header, Board, DTBO, dan sekarang DTB!
+BOARD_MKBOOTIMG_ARGS := --kernel_offset 0x00008000 --ramdisk_offset 0x05000000 --tags_offset 0x04000000 --header_version 2 --board SRPTK19C000SA --recovery_dtbo device/samsung/a02/prebuilt/dtbo --dtb device/samsung/a02/prebuilt/dtb/dtb.dtb
 
 # Partitions
 BOARD_FLASH_BLOCK_SIZE := 131072
@@ -42,12 +43,12 @@ BOARD_SYSTEMIMAGE_PARTITION_TYPE := ext4
 BOARD_USERDATAIMAGE_FILE_SYSTEM_TYPE := f2fs
 BOARD_VENDORIMAGE_FILE_SYSTEM_TYPE := ext4
 
+# Path Output Vendor
+TARGET_COPY_OUT_VENDOR := vendor
+
 # Dynamic Partitions
 BOARD_SAMSUNG_DYNAMIC_PARTITIONS_PARTITION_LIST := system vendor product odm
 BOARD_SAMSUNG_DYNAMIC_PARTITIONS_SIZE := 4068474880
-
-# Recovery
-BOARD_INCLUDE_RECOVERY_DTBO := true
 TARGET_USERIMAGES_USE_EXT4 := true
 
 # Security patch level
@@ -112,3 +113,4 @@ TW_INPUT_BLACKLIST := "hbtp_vm"
 TW_SUPPORT_INPUT_1_2 := true
 TW_FILTER_TOUCH_EVENTS := true
 TW_EVENT_LOGGING := false
+BUILD_BROKEN_DUP_RULES := true
