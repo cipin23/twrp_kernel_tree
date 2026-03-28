@@ -6,7 +6,7 @@ odm                                                /odm            ext4        r
 
 /dev/block/platform/bootdevice/by-name/boot        /boot           emmc        defaults                  recoveryonly
 /dev/block/platform/bootdevice/by-name/recovery    /recovery       emmc        defaults                  recoveryonly
-/dev/block/platform/bootdevice/by-name/userdata    /data           f2fs        noatime,nosuid,nodev,discard,usrquota,grpquota,fsync_mode=nobarrier,reserve_root=32768,resgid=1065,inlinecrypt  wait,length=-16384,check
+/dev/block/platform/bootdevice/by-name/userdata    /data           f2fs        defaults                  wait,length=-16384,fileencryption=aes-256-xts:aes-256-cts:v2+inlinecrypt_optimized+wrappedkey_v0,keydirectory=/metadata/vold/metadata_encryption,encryptable=footer
 /dev/block/platform/bootdevice/by-name/cache       /cache          ext4        defaults                  recoveryonly
 /dev/block/platform/bootdevice/by-name/misc        /misc           emmc        defaults                  recoveryonly
 
