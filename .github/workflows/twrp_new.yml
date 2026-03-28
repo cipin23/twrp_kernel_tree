@@ -1,4 +1,4 @@
-name: Twrp New
+name: TeamWin [TWRP]
 
 on:
   workflow_dispatch:
@@ -14,7 +14,7 @@ on:
       DEVICE_TREE_BRANCH:
         description: 'Custom Recovery Tree Branch' # Your Device Tree Branch, make sure it's right.
         required: true
-        default: 'main'
+        default: 'a11'
       BUILD_TARGET:
         description: 'Specify your Build Target' # Pick among boot, recovery and vendor_boot
         required: true
@@ -51,11 +51,11 @@ jobs:
 
     - name: Check Manifest Branch
       run: |
-        if [ ${{ inputs.MANIFEST_BRANCH }} == 'twrp-11' ] || [ ${{ inputs.MANIFEST_BRANCH }} == 'twrp-11' ]; then
+        if [ ${{ inputs.MANIFEST_BRANCH }} == 'twrp-11' ] || [ ${{ inputs.MANIFEST_BRANCH }} == 'twrp-12.1' ]; then
             echo "MANIFEST=https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp.git" >> $GITHUB_ENV
             echo "CHECK_LEGACY_BRANCH=false" >> $GITHUB_ENV
         else
-            echo "MANIFEST=https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp.git" >> $GITHUB_ENV
+            echo "MANIFEST=https://github.com/minimal-manifest-twrp/platform_manifest_twrp_omni.git" >> $GITHUB_ENV
             echo "CHECK_LEGACY_BRANCH=true" >> $GITHUB_ENV
         fi
 
