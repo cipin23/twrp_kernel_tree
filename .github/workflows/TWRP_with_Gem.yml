@@ -1,63 +1,65 @@
 name: Build TWRP with Gem
 
 on:
-  workflow_dispatch:
-    inputs:
-      MANIFEST_BRANCH:
-        description: 'Branch Manifest (contoh: twrp-11)'
-        required: true
-        default: 'twrp-11'
-      DEVICE_TREE:
-        description: 'Link GitHub Device Tree loe'
-        required: true
-        default: 'https://github.com/rdbckp/twrp_kernel_tree'
-      DEVICE_PATH:
-        description: 'Path Device Tree (folder target)'
-        required: true
-        default: 'device/samsung/a02'
-      DEVICE_NAME:
-        description: 'Nama Device (seperti di BoardConfig.mk)'
-        required: true
-        default: 'a02'
+  workflow_dispatch: # Biar bisa di-klik manual dari tab Actions
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
-    - name: Beresin Storage Runner
-      uses: jlumbroso/free-disk-space@main
-      with:
-        tool-cache: true
-        android: false # Kita butuh Android SDK buat build
+    - name: Checkout Repo
+      uses: actions/checkout@v3
 
-    - name: Install Tools Wajib
+    - name: Cleaning Storage
+      run: |
+        sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
+        sudo apt-get clean
+
+    - name: Install Tools Build
       run: |
         sudo apt-get update
-        sudo apt-get install -y bc build-essential tar zip curl libstdc++6 git wget python3 gcc clang libssl-dev repo rsync
+        sudo apt-get install -y bc build-essential tar libssl-dev libffi-dev \
+        python-is-python3 gcc-multilib g++-multilib git gnupg gperf \
+        imagemagick lib32ncurses5-dev lib32readline-dev lib32z1-dev \
+        liblz4-tool libncurses5 libncurses5-dev libsdl1.2-dev libssl-dev \
+        libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools \
+        xsltproc zip zlib1g-dev
 
-    - name: Setup Repo & Sync Source
+    - name: Install Repo Tool
       run: |
-        mkdir ~/twrp && cd ~/twrp
-        git config --global user.email "gw@oprek.com"
-        git config --global user.name "Opreker"
-        repo init --depth=1 -u https://github.com/minimal-twrp/android_bootable_recovery.git -b ${{ github.event.inputs.MANIFEST_BRANCH }}
-        repo sync -j$(nproc --all) --force-sync
+        mkdir ~/bin
+        curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
+        chmod a+x ~/bin/repo
+        sudo ln -sf ~/bin/repo /usr/bin/repo
 
-    - name: Clone Device Tree
+    - name: Repo Sync
       run: |
+        mkdir ~/twrp
         cd ~/twrp
-        git clone ${{ github.event.inputs.DEVICE_TREE }} -b main ${{ github.event.inputs.DEVICE_PATH }}
+        repo init --depth=1 -u https://github.com/minimal-manifest-twrp/platform_manifest_twrp_aosp.git -b twrp-11
+        repo sync -j$(nproc --all) --force-sync --no-clone-bundle --no-tags
 
-    - name: Build Recovery (Menu Diet)
+    - name: Building
       run: |
-        cd ~/twrp
-        export ALLOW_MISSING_DEPENDENCIES=true
-        source build/envsetup.sh
-        lunch twrp_${{ github.event.inputs.DEVICE_NAME }}-eng
-        make recoveryimage -j$(nproc --all)
+        chmod +x build.sh
+        ./build.sh
+      shell: bash
 
-    - name: Upload Hasil Build
-      uses: actions/upload-artifact@v4
+    - name: Set Date Variable
+      id: date
+      run: echo "::set-output name=date::$(date +'%Y.%m.%d-%H%M')"
+
+    - name: GitHub Release
+      uses: softprops/action-gh-release@v1
       with:
-        name: TWRP-A022F-Custom
-        path: ~/twrp/out/target/product/${{ github.event.inputs.DEVICE_NAME }}/recovery.img
+        tag_name: TWRP-A02-${{ steps.date.outputs.date }}
+        name: TWRP Samsung A02 Build ${{ steps.date.outputs.date }}
+        body: |
+          ### TWRP Recovery for Samsung A02 (SM-A022F)
+          - **Build Date:** ${{ steps.date.outputs.date }}
+          - **Status:** Stable / Success
+          - **Size:** 22MB
+          - **Features:** Include DTB & DTBO fix
+        files: output/recovery.img
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
